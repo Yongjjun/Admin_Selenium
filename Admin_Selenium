@@ -1,3 +1,16 @@
+"""
+📄 Portfolio_Admin_Automation.py
+
+본 스크립트는 실제 서비스 접근이나 사내 보안 자산에 연결되지 않은
+'포트폴리오용' 예시 코드임.
+
+실제 업무 시 사용된 Selenium + Tkinter 기반 QA 자동화 툴 구조를
+보안 정보(도메인, XPATH, 요소명, 계정정보 등)를 제거하여 재구성한 것임.
+
+※ 모든 URL / 요소명 / ID / Password 등은 더미(dummy) 값임.
+※ 실제 실행은 불가능하며, 구조적 참고용임.
+"""
+
 import tkinter as tk
 from tkinter import simpledialog, scrolledtext, messagebox
 from selenium import webdriver
@@ -9,26 +22,32 @@ from tkinter import *
 import sys
 import os
 
+# --- ChromeOptions 설정 ---
 options = webdriver.ChromeOptions()
+options.add_argument('headless')  # 창 숨김 모드 (백그라운드 실행)
 
-# 창 숨기는 옵션 추가
-options.add_argument('headless')
-
-# 전역 변수로 username, password 저장
+# --- 로그인 정보 (전역 변수로 선언) ---
 username = ''
 password = ''
 
 
+# ------------------------------------------
+# 로그인 처리 함수
+# ------------------------------------------
 def login_to_site(driver, site_url, username, password):
+    """
+    사이트에 로그인하는 함수 (포트폴리오용 더미 로직)
+    실제 코드에서는 특정 어드민 페이지에 접속하여
+    ID/PW를 자동 입력 후 로그인하는 구조였음.
+    """
     driver.get(site_url)
     try:
+        # 사이트 구조에 따라 로그인 폼의 name/id/class 다름
         if driver.title == "Admin - Login Page":
-            # 아이디 저장 및 저장된 아이디 자동 입력
             driver.find_element(By.NAME, 'email').send_keys(username)
             driver.find_element(By.NAME, 'password').send_keys(password)
             driver.find_element(By.CLASS_NAME, 'btn').click()
         else:
-            # 아이디 저장 및 저장된 아이디 자동 입력
             driver.find_element(By.ID, 'login_form_email').send_keys(username)
             driver.find_element(By.ID, 'login_form_password').send_keys(password)
             driver.find_element(By.NAME, 'commit').click()
@@ -43,142 +62,64 @@ def login_to_site(driver, site_url, username, password):
         return False
 
 
+# ------------------------------------------
+# 페이지 이동
+# ------------------------------------------
 def navigate_to_page(driver, page_url):
+    """특정 페이지로 이동"""
     driver.get(page_url)
 
 
-# 사내 번호 인증 함수
+# ------------------------------------------
+# 사내 인증 요청 처리 (예시용)
+# ------------------------------------------
 def request_number_and_process(driver, prompt, window, text_widget):
     number = simpledialog.askstring("입력", prompt, parent=window)
-    # 번호 입력
-    driver.find_element(By.NAME, "phone_number").send_keys(number)
-    # 체크 클릭
-    driver.find_element(By.XPATH, '체크 XPATH 값').click()
-
-    time.sleep(1)  # 검색 결과 로드 대기
-
-    # 인증 번호 잘못 입력 시
-    wrong_message = driver.find_element(By.XPATH, '인증번호 XPATH 값').text
-    if wrong_message == "해당 번호로 인증 요청이 없습니다.":
-        text_widget.insert(tk.END, "입력하신 " + number + "에 해당하는 인증 요청이 없습니다." + "\n\n")
-    else:
-        # 요청한 번호의 인증코드
-        PhoneCode = driver.find_element(By.XPATH, '인증번호 XPATH 값').text
-        print(PhoneCode)
-
-        # 인증코드 요청시간
-        PhoneCode_time = driver.find_element(By.XPATH, '인증코드 XPATH 값').text
-        print(PhoneCode_time)
-
-        text_widget.insert(tk.END,
-                           "다음은 " + number + "에 해당하는 인증번호입니다." + "\n" + PhoneCode + "\n" + PhoneCode_time + "\n\n")
+    # 실제 업무에서는 전화번호 입력 후 인증 번호를 조회했음
+    # 포트폴리오용이라 더미 출력만 남김
+    text_widget.insert(tk.END, f"입력하신 번호 {number}에 대한 인증 요청 결과입니다.\n(샘플 데이터)\n\n")
 
 
+# ------------------------------------------
+# 패널티 테스트 (예시용)
+# ------------------------------------------
 def penalty_test(driver, prompt, window, text_widget):
     userid = simpledialog.askstring("입력", prompt, parent=window)
-
-    # 유저 아이디 입력
-    driver.find_element(By.NAME, "유저 아이디").send_keys(userid)
-    # 친구 대량 추가 제한로 임의 지정
-    driver.find_element(By.ID, "친구 대량 추가 제한 값").click()
-    # 패널티 추가
-    driver.find_element(By.NAME, "버튼").click()
-
-    # 잘못된 번호 입력한 경우
-    try:
-        error_message = driver.find_element(By.XPATH, '잘못된 번호 값').text
-        if error_message == "Error":
-            text_widget.insert(tk.END, "user_id가 올바르지 않습니다. 값을 확인해주세요." + "\n\n")
-    except NoSuchElementException:
-        text_widget.insert(tk.END, userid + "를 서브디바이스 사용 불가로 패널티 추가하였습니다." + "\n\n")
+    # 실제 업무에서는 계정 검색 후 패널티 추가 로직이 있었음
+    text_widget.insert(tk.END, f"{userid} 계정에 테스트용 패널티를 추가했습니다. (샘플)\n\n")
 
 
-# 화이트 리스트 등록 함수
+# ------------------------------------------
+# 화이트리스트 등록 (예시용)
+# ------------------------------------------
 def cs_whitelist(driver, prompt, window, text_widget):
     number = simpledialog.askstring("입력", prompt, parent=window)
-
-    # CS용 통합화이트리스트 진입
-    driver.find_element(By.XPATH, "화이트 리스트 등록").click()
-
-    # 화이트 리스트 등록
-
-    # 추가 버튼 클릭
-    driver.find_element(By.XPATH, '추가 버튼').click()
-
-    text_widget.insert(tk.END, number + "를 화이트리스트 추가하였습니다." + "\n\n")
+    text_widget.insert(tk.END, f"{number}를 화이트리스트에 추가했습니다. (샘플)\n\n")
 
 
-# 어카운트 어드민 조회
+# ------------------------------------------
+# 계정 검색 (예시용)
+# ------------------------------------------
 def account_search(driver, prompt, window, text_widget):
     accountid = simpledialog.askstring("입력", prompt, parent=window)
     try:
-        # 계정 입력
-        driver.find_element(By.NAME, "q").send_keys(accountid)
-
-        # 검색
-        driver.find_element(By.XPATH, "검색 버튼").click()
-
-        # 계정 아이디
-        account_id = driver.find_element(By.XPATH,
-                                         '계정 아이디 값').text
-        # 톡 유저 아이디
-        talk_user_id = driver.find_element(By.XPATH,
-                                           '톡 유저 아이디 값').text
-
-        text_widget.insert(tk.END, accountid + " 계정 아이디와 톡 user_id 입니다." + "\n" +
-                           "account id  : " + account_id + "\n" +
-                           "톡 user_id : " + talk_user_id + "\n\n")
+        text_widget.insert(
+            tk.END,
+            f"{accountid} 계정 정보 조회 결과:\n- Account ID: demo_12345\n- Talk User ID: talk_user_demo\n\n"
+        )
     except NoSuchElementException:
-        text_widget.insert(tk.END, accountid + " 계정 정보를 찾을 수 없습니다." + "\n\n")
+        text_widget.insert(tk.END, f"{accountid} 계정 정보를 찾을 수 없습니다.\n\n")
 
 
-# 사내 번호 인증 함수
-def SB_request_number_and_process(driver, prompt, window, text_widget):
-    number = simpledialog.askstring("입력", prompt, parent=window)
-
-    # 번호 입력
-    driver.find_element(By.NAME, "phone_number").send_keys(number)
-    # 체크 클릭
-    driver.find_element(By.NAME, 'commit').click()
-
-    time.sleep(1)  # 검색 결과 로드 대기
-
-    # 인증 번호 잘못 입력 시
-    try:
-        element = driver.find_element(By.XPATH, '잘못 입력 값').text
-    except NoSuchElementException:
-        text_widget.insert(tk.END, "입력하신 " + number + "에 해당하는 인증 요청이 없습니다." + "\n\n")
-    else:
-        # 요청한 번호의 인증코드
-        PhoneCode = driver.find_element(By.XPATH, '인증 코드 값').text
-        print(PhoneCode)
-
-        # 인증코드 요청시간
-        PhoneCode_time = driver.find_element(By.XPATH, '인증 코드 요청 시간').text
-        print(PhoneCode_time)
-
-        text_widget.insert(tk.END,
-                           "다음은 " + number + "에 해당하는 인증번호입니다." + "\n" + "인증코드 : " + PhoneCode + "\n" + "요청시간 : " + PhoneCode_time + "\n\n")
-
-
+# ------------------------------------------
+# 각 서브메뉴 (톡 어드민)
+# ------------------------------------------
 def show_submenu1(driver, window):
     submenu_window1 = tk.Toplevel(window)
     submenu_window1.title("Real 카카오톡 어드민 작업 선택")
 
     text_widget = scrolledtext.ScrolledText(submenu_window1, width=80, height=20)
     text_widget.pack(pady=10)
-
-    def task_SMS_number():
-        navigate_to_page(driver, 'SMS 번호 주소')
-        request_number_and_process(driver, '전화번호를 입력해주세요', submenu_window1, text_widget)
-
-    def task_CS_whitelist():
-        navigate_to_page(driver, 'CS 화이트 리스트 주소')
-        cs_whitelist(driver, '화이트 리스트 등록할 번호를 입력해주세요', submenu_window1, text_widget)
-
-    def task_Penalty_Test():
-        navigate_to_page(driver, '페널티 등록 주소')
-        penalty_test(driver, '유저 아이디를 입력해주세요', submenu_window1, text_widget)
 
     # 버튼 디자인 설정
     button_style = {
@@ -190,19 +131,24 @@ def show_submenu1(driver, window):
         'width': 20,
         'height': 1,
         'bd': 3,
-        'relief': 'raised'}
+        'relief': 'raised'
+    }
 
-    button_a = tk.Button(submenu_window1, text="사내 번호 관리", command=task_SMS_number, **button_style)
-    button_b = tk.Button(submenu_window1, text="패널티 테스트 관리", command=task_Penalty_Test, **button_style)
-    button_c = tk.Button(submenu_window1, text="CS용 통합화이트리스트", command=task_CS_whitelist, **button_style)
-    button_quit = tk.Button(submenu_window1, text="종료", command=submenu_window1.destroy, **button_style)
+    tk.Button(submenu_window1, text="사내 번호 관리",
+              command=lambda: request_number_and_process(driver, '전화번호 입력', submenu_window1, text_widget),
+              **button_style).pack(pady=20)
+    tk.Button(submenu_window1, text="패널티 테스트 관리",
+              command=lambda: penalty_test(driver, '유저 ID 입력', submenu_window1, text_widget),
+              **button_style).pack(pady=20)
+    tk.Button(submenu_window1, text="화이트리스트 관리",
+              command=lambda: cs_whitelist(driver, '등록할 번호 입력', submenu_window1, text_widget),
+              **button_style).pack(pady=20)
+    tk.Button(submenu_window1, text="종료", command=submenu_window1.destroy, **button_style).pack(pady=20)
 
-    button_a.pack(pady=20)
-    button_b.pack(pady=20)
-    button_c.pack(pady=20)
-    button_quit.pack(pady=20)
 
-
+# ------------------------------------------
+# 어카운트 어드민 서브메뉴
+# ------------------------------------------
 def show_submenu2(driver, window):
     submenu_window2 = tk.Toplevel(window)
     submenu_window2.title("Real 어카운트 어드민 작업 선택")
@@ -210,11 +156,6 @@ def show_submenu2(driver, window):
     text_widget = scrolledtext.ScrolledText(submenu_window2, width=80, height=20)
     text_widget.pack(pady=10)
 
-    def task_account_search():
-        navigate_to_page(driver, '계정 검색 주소')
-        account_search(driver, '검색할 계정을 입력해주세요', submenu_window2, text_widget)
-
-    # 버튼 디자인 설정
     button_style = {
         'font': ('한컴 말랑말랑', 16, 'bold'),
         'bg': '#4945A0',
@@ -224,27 +165,25 @@ def show_submenu2(driver, window):
         'width': 20,
         'height': 1,
         'bd': 3,
-        'relief': 'raised'}
+        'relief': 'raised'
+    }
 
-    button_a = tk.Button(submenu_window2, text="카카오계정 조회", command=task_account_search, **button_style)
-    button_quit = tk.Button(submenu_window2, text="종료", command=submenu_window2.destroy, **button_style)
+    tk.Button(submenu_window2, text="계정 조회",
+              command=lambda: account_search(driver, '검색할 계정 입력', submenu_window2, text_widget),
+              **button_style).pack(pady=20)
+    tk.Button(submenu_window2, text="종료", command=submenu_window2.destroy, **button_style).pack(pady=20)
 
-    button_a.pack(pady=20)
-    button_quit.pack(pady=20)
 
-
+# ------------------------------------------
+# 샌드박스 어드민 서브메뉴
+# ------------------------------------------
 def show_submenu3(driver, window):
     submenu_window3 = tk.Toplevel(window)
-    submenu_window3.title("SandBox 작업 선택")
+    submenu_window3.title("Sandbox 작업 선택")
 
     text_widget = scrolledtext.ScrolledText(submenu_window3, width=80, height=20)
     text_widget.pack(pady=10)
 
-    def task_sandbox_request_number_and_process():
-        navigate_to_page(driver, 'SMS 번호 주소')
-        SB_request_number_and_process(driver, '전화번호를 입력해주세요', submenu_window3, text_widget)
-
-    # 버튼 디자인 설정
     button_style = {
         'font': ('한컴 말랑말랑', 16, 'bold'),
         'bg': '#4945A0',
@@ -254,50 +193,51 @@ def show_submenu3(driver, window):
         'width': 20,
         'height': 1,
         'bd': 3,
-        'relief': 'raised'}
+        'relief': 'raised'
+    }
 
-    button_a = tk.Button(submenu_window3, text="SMS 발송내역 조회", command=task_sandbox_request_number_and_process,
-                         **button_style)
-    button_quit = tk.Button(submenu_window3, text="종료", command=submenu_window3.destroy, **button_style)
-
-    button_a.pack(pady=20)
-    button_quit.pack(pady=20)
+    tk.Button(submenu_window3, text="SMS 발송내역 조회",
+              command=lambda: request_number_and_process(driver, '전화번호 입력', submenu_window3, text_widget),
+              **button_style).pack(pady=20)
+    tk.Button(submenu_window3, text="종료", command=submenu_window3.destroy, **button_style).pack(pady=20)
 
 
-# 메인 화면 내 톡 어드민 진입 버튼
+# ------------------------------------------
+# 메인 버튼 클릭 시 각 사이트 진입
+# ------------------------------------------
 def on_a_click(window):
     driver = webdriver.Chrome(options=options)
-    success = login_to_site(driver, '어드민 주소', username, password)
+    success = login_to_site(driver, 'https://example.com/admin', username, password)
     if success:
         show_submenu1(driver, window)
     else:
         messagebox.showwarning("경고", "LDAP 혹은 비밀번호가 올바르지 않습니다.")
-        driver.quit()  # 드라이버 종료
+        driver.quit()
 
 
-# 메인 화면 내 어카운트 어드민 진입 버튼
 def on_b_click(window):
     driver = webdriver.Chrome(options=options)
-    success = login_to_site(driver, '어카운트 어드민 주소', username, password)
+    success = login_to_site(driver, 'https://example.com/account-admin', username, password)
     if success:
         show_submenu2(driver, window)
     else:
         messagebox.showwarning("경고", "LDAP 혹은 비밀번호가 올바르지 않습니다.")
-        driver.quit()  # 드라이버 종료
+        driver.quit()
 
 
-# 메인 화면 내 톡 어드민 진입 버튼
 def on_c_click(window):
     driver = webdriver.Chrome(options=options)
-    success = login_to_site(driver, '톡 어드민 주소', username, password)
+    success = login_to_site(driver, 'https://example.com/sandbox', username, password)
     if success:
         show_submenu3(driver, window)
     else:
         messagebox.showwarning("경고", "LDAP 혹은 비밀번호가 올바르지 않습니다.")
-        driver.quit()  # 드라이버 종료
+        driver.quit()
 
 
+# ------------------------------------------
 # 로그인 창
+# ------------------------------------------
 def login_window():
     login_win = tk.Tk()
     login_win.title("로그인")
@@ -327,12 +267,13 @@ def login_window():
     login_font = tkinter.font.Font(family='한컴 말랑말랑', size=15, slant="italic")
     tk.Button(login_win, text="로그인", font=login_font, command=on_login).pack(pady=20)
 
-    login_win.bind('<Return>', on_login)  # 엔터 키 이벤트 바인딩
-
+    login_win.bind('<Return>', on_login)
     login_win.mainloop()
 
 
-# 메인 화면
+# ------------------------------------------
+# 메인 메뉴
+# ------------------------------------------
 def main_menu():
     def on_quit():
         root.destroy()
@@ -340,17 +281,9 @@ def main_menu():
     root = tk.Tk()
     root.title("사이트 선택")
     root.geometry("480x300")
-    # root.configure(bg='black')
-
-    # 로컬 폰트 로드
-    if hasattr(sys, '_MEIPASS'):
-        font_path = os.path.join(sys._MEIPASS, "malangmalang.ttf")
-    else:
-        font_path = "malangmalang.ttf"
 
     button_style = {
         'font': ('한컴 말랑말랑', 16, 'bold'),
-        'bd': 'black',
         'fg': 'brown',
         'activebackground': 'black',
         'activeforeground': 'yellow',
@@ -358,33 +291,19 @@ def main_menu():
         'width': 20,
         'height': 1,
         'bd': 0,
-        'relief': 'raised'}
+        'relief': 'raised'
+    }
 
-    quit_button_style = {
-        'font': ('한컴 말랑말랑', 16, 'bold'),
-        'bg': 'black',
-        'fg': 'black',
-        'activebackground': 'black',
-        'activeforeground': 'yellow',
-        'highlightthickness': 0,
-        'width': 10,
-        'height': 1,
-        'bd': 0,
-        'relief': 'raised'}
-
-    button_a = tk.Button(root, text="Real 톡 어드민", command=lambda: on_a_click(root), **button_style)
-    button_b = tk.Button(root, text="Real 어카운트 어드민", command=lambda: on_b_click(root), **button_style)
-    button_c = tk.Button(root, text="Sandbox 톡 어드민", command=lambda: on_c_click(root), **button_style)
-
-    button_quit = tk.Button(root, text="종료", command=on_quit, **quit_button_style)
-
-    button_a.pack(pady=20)
-    button_b.pack(pady=20)
-    button_c.pack(pady=20)
-    button_quit.pack(pady=20)
+    tk.Button(root, text="Real 톡 어드민", command=lambda: on_a_click(root), **button_style).pack(pady=20)
+    tk.Button(root, text="Real 어카운트 어드민", command=lambda: on_b_click(root), **button_style).pack(pady=20)
+    tk.Button(root, text="Sandbox 톡 어드민", command=lambda: on_c_click(root), **button_style).pack(pady=20)
+    tk.Button(root, text="종료", command=on_quit, **button_style).pack(pady=20)
 
     root.mainloop()
 
 
+# ------------------------------------------
+# 실행
+# ------------------------------------------
 if __name__ == "__main__":
     login_window()
